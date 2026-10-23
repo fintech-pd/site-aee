@@ -9,6 +9,9 @@ import type {
   TimelineEntry,
   Person,
   Page,
+  SocialProject,
+  InstitutionDocument,
+  SiteStats,
 } from '@/payload-types'
 
 export async function getInstitutionBySlug(slug: string): Promise<Institution | null> {
@@ -213,4 +216,64 @@ export async function getPageBySlug(
     limit: 1,
   })
   return (result.docs[0] as unknown as Page) || null
+}
+
+export async function getSocialProjectsByInstitution(
+  institutionId: string | number,
+  opts: { activeOnly?: boolean } = {},
+): Promise<SocialProject[]> {
+  const payload = await getPayloadClient()
+  const where: Where = { institution: { equals: institutionId } }
+  if (opts.activeOnly) where.active = { equals: true }
+  const result = await payload.find({
+    collection: 'social-projects',
+    where,
+    sort: 'order',
+    limit: 100,
+    depth: 1,
+  })
+  return result.docs as unknown as SocialProject[]
+}
+
+export async function getSocialProjectBySlug(
+  institutionId: string | number,
+  slug: string,
+): Promise<SocialProject | null> {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'social-projects',
+    where: {
+      institution: { equals: institutionId },
+      slug: { equals: slug },
+    },
+    limit: 1,
+    depth: 1,
+  })
+  return (result.docs[0] as unknown as SocialProject) || null
+}
+
+export async function getDocumentsByInstitution(
+  institutionId: string | number,
+  section?: string,
+): Promise<InstitutionDocument[]> {
+  const payload = await getPayloadClient()
+  const where: Where = { institution: { equals: institutionId } }
+  if (section) where.section = { equals: section }
+  const result = await payload.find({
+    collection: 'documents',
+    where,
+    sort: 'order',
+    limit: 200,
+  })
+  return result.docs as unknown as InstitutionDocument[]
+}
+
+export async function getSiteStats(): Promise<SiteStats | null> {
+  const payload = await getPayloadClient()
+  try {
+    const result = await payload.findGlobal({ slug: 'site-stats' })
+    return result as unknown as SiteStats
+  } catch {
+    return null
+  }
 }

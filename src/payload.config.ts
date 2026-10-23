@@ -18,6 +18,10 @@ import { Events } from './collections/Events.ts'
 import { Slides } from './collections/Slides.ts'
 import { TimelineEntries } from './collections/TimelineEntries.ts'
 import { Pages } from './collections/Pages.ts'
+import { SocialProjects } from './collections/SocialProjects.ts'
+import { Documents } from './collections/Documents.ts'
+import { ContactMessages } from './collections/ContactMessages.ts'
+import { SiteStats } from './globals/SiteStats.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -38,9 +42,13 @@ export default buildConfig({
     Events,
     Slides,
     TimelineEntries,
+    SocialProjects,
+    Documents,
+    ContactMessages,
     Media,
     Users,
   ],
+  globals: [SiteStats],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || 'aee-dev-secret-change-me',
   typescript: {
@@ -89,6 +97,7 @@ export default buildConfig({
       enabled: Boolean(process.env.SUPABASE_S3_ENDPOINT),
       collections: {
         media: true,
+        documents: true,
       },
       bucket: process.env.SUPABASE_S3_BUCKET || 'media',
       config: {

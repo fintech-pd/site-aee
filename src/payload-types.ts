@@ -64,6 +64,7 @@ export interface Institution {
   type: InstitutionType
   parent?: (number | null) | Institution
   domain?: string | null
+  externalUrl?: string | null
   logo?: (number | null) | Media
   logoLight?: (number | null) | Media
   favicon?: (number | null) | Media
@@ -97,11 +98,20 @@ export interface Institution {
     document?: (number | null) | Media
     description?: SerializedEditorState | null
   }
+  governance?: SerializedEditorState | null
+  chaplaincy?: SerializedEditorState | null
   updatedAt: string
   createdAt: string
 }
 
-export type PersonCategory = 'diretoria' | 'reitoria' | 'coordenacao' | 'nde' | 'docente' | 'outro'
+export type PersonCategory =
+  | 'diretoria'
+  | 'conselho'
+  | 'reitoria'
+  | 'coordenacao'
+  | 'nde'
+  | 'docente'
+  | 'outro'
 
 export interface Person {
   id: number
@@ -250,6 +260,91 @@ export interface Page {
   content: SerializedEditorState
   showInMenu?: boolean | null
   menuOrder?: number | null
+  updatedAt: string
+  createdAt: string
+}
+
+export type SocialProjectCategory =
+  | 'educacional'
+  | 'inclusao'
+  | 'cultural'
+  | 'desenvolvimento_humano'
+  | 'outro'
+
+export interface SocialProjectResult {
+  value: string
+  label: string
+  id?: string | null
+}
+
+export interface SocialProject {
+  id: number
+  title: string
+  slug: string
+  institution: (number | null) | Institution
+  category: SocialProjectCategory
+  summary?: string | null
+  description?: SerializedEditorState | null
+  coverImage?: (number | null) | Media
+  results?: SocialProjectResult[] | null
+  active?: boolean | null
+  order?: number | null
+  updatedAt: string
+  createdAt: string
+}
+
+export type DocumentSection = 'transparencia' | 'publicacoes'
+export type DocumentCategory =
+  | 'relatorio'
+  | 'estatuto'
+  | 'politica'
+  | 'privacidade'
+  | 'ata'
+  | 'publicacao'
+  | 'outro'
+
+export interface InstitutionDocument {
+  id: number
+  title: string
+  institution: (number | null) | Institution
+  section: DocumentSection
+  category: DocumentCategory
+  description?: string | null
+  publishedAt?: string | null
+  order?: number | null
+  url?: string | null
+  filename?: string | null
+  mimeType?: string | null
+  filesize?: number | null
+  updatedAt: string
+  createdAt: string
+}
+
+export type ContactMessageStatus = 'novo' | 'em_atendimento' | 'respondido' | 'arquivado'
+
+export interface ContactMessage {
+  id: number
+  institution: (number | null) | Institution
+  name: string
+  email: string
+  phone?: string | null
+  subject?: string | null
+  message: string
+  consent: boolean
+  status?: ContactMessageStatus | null
+  updatedAt: string
+  createdAt: string
+}
+
+export interface SiteStats {
+  id: number
+  foundingYear?: number | null
+  studentsCount?: string | null
+  institutionsCount?: number | null
+  citiesCount?: number | null
+  socialProjectsCount?: string | null
+  referenceDate?: string | null
+  notes?: string | null
   updatedAt: string
   createdAt: string
 }

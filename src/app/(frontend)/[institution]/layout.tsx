@@ -24,8 +24,8 @@ export default async function InstitutionLayout({
     <div
       style={
         {
-          '--color-primary': institution.theme?.primaryColor || '#0b3b60',
-          '--color-secondary': institution.theme?.secondaryColor || '#f2a900',
+          '--color-primary': institution.theme?.primaryColor || '#17365d',
+          '--color-secondary': institution.theme?.secondaryColor || '#b89553',
         } as React.CSSProperties
       }
     >

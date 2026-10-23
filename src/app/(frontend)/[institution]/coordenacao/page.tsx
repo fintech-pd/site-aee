@@ -3,6 +3,7 @@ import { getInstitutionBySlug, getPeopleByInstitution } from '@/lib/queries'
 
 const CATEGORY_LABELS: Record<string, string> = {
   diretoria: 'Diretoria / Mantenedora',
+  conselho: 'Conselho Deliberativo',
   reitoria: 'Reitoria / Direção Geral',
   coordenacao: 'Coordenação de Curso',
   nde: 'Núcleo Docente Estruturante (NDE)',
@@ -10,7 +11,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   outro: 'Outros',
 }
 
-const CATEGORY_ORDER = ['diretoria', 'reitoria', 'coordenacao', 'nde', 'docente', 'outro']
+const CATEGORY_ORDER = ['diretoria', 'conselho', 'reitoria', 'coordenacao', 'nde', 'docente', 'outro']
 
 export default async function PeoplePage({
   params,

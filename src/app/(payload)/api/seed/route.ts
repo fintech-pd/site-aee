@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { richTextFromText } from '@/lib/richtext'
-import { institutionsSeed, timelineSeed, coursesSeed } from '@/lib/seed-data'
+import {
+  institutionsSeed,
+  timelineSeed,
+  coursesSeed,
+  siteStatsSeed,
+  socialProjectsSeed,
+} from '@/lib/seed-data'
 
 // Popula o banco com as 7 instituições e conteúdo de EXEMPLO (textos genéricos a serem
 // substituídos pelo conteúdo real no painel /admin). Protegido pelo mesmo segredo usado em
@@ -41,11 +47,14 @@ export async function POST(request: Request) {
         slug: inst.slug,
         type: inst.type,
         city: inst.city,
+        externalUrl: inst.externalUrl,
         shortDescription: inst.shortDescription,
         about: richTextFromText(inst.about),
         mission: richTextFromText(inst.mission),
         vision: richTextFromText(inst.vision),
         values: richTextFromText(inst.values),
+        governance: inst.governance ? richTextFromText(inst.governance) : undefined,
+        chaplaincy: inst.chaplaincy ? richTextFromText(inst.chaplaincy) : undefined,
         contact: inst.contact,
         campuses: inst.campuses,
         mecAuthorization: inst.mecAuthorization,
@@ -147,7 +156,51 @@ export async function POST(request: Request) {
         order: 0,
       },
     })
+
+    if (inst.type === 'mantenedora') {
+      await payload.create({
+        collection: 'people',
+        data: {
+          name: 'A definir',
+          role: 'Membro do Conselho Deliberativo',
+          category: 'conselho',
+          institution: institutionId,
+          order: 1,
+        },
+      })
+    }
   }
+
+  // Projetos sociais (responsabilidade social) da mantenedora
+  for (const project of socialProjectsSeed) {
+    await payload.create({
+      collection: 'social-projects',
+      data: {
+        title: project.title,
+        slug: project.slug,
+        institution: aeeId,
+        category: project.category,
+        summary: project.summary,
+        description: richTextFromText(project.description),
+        results: project.results,
+        active: true,
+      },
+    })
+  }
+
+  // AEE em números
+  await payload.updateGlobal({
+    slug: 'site-stats',
+    data: {
+      foundingYear: siteStatsSeed.foundingYear,
+      studentsCount: siteStatsSeed.studentsCount,
+      institutionsCount: siteStatsSeed.institutionsCount,
+      citiesCount: siteStatsSeed.citiesCount,
+      socialProjectsCount: siteStatsSeed.socialProjectsCount,
+      referenceDate: new Date().toISOString(),
+      notes: siteStatsSeed.notes,
+    },
+  })
 
   return NextResponse.json({
     message: 'Seed executado com sucesso.',

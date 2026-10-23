@@ -5,10 +5,10 @@ import {
   getActiveSlides,
   getCoursesByInstitution,
   getNewsByInstitution,
-  getTimelineByInstitution,
 } from '@/lib/queries'
 import { CourseStatusBadge } from '@/components/CourseStatusBadge'
 import { formatDateBR } from '@/lib/format'
+import { MantenedoraHome } from './_components/MantenedoraHome'
 
 export default async function InstitutionHome({
   params,
@@ -19,37 +19,42 @@ export default async function InstitutionHome({
   const institution = await getInstitutionBySlug(slug)
   if (!institution) notFound()
 
-  const [slides, courses, news, timeline] = await Promise.all([
-    getActiveSlides(institution.id),
+  const slides = await getActiveSlides(institution.id)
+  const heroSlide = slides[0]
+
+  if (institution.type === 'mantenedora') {
+    return <MantenedoraHome institution={institution} heroSlide={heroSlide} />
+  }
+
+  const [courses, news] = await Promise.all([
     getCoursesByInstitution(institution.id, { status: 'oferta' }),
     getNewsByInstitution(institution.id, 3),
-    institution.type === 'mantenedora' ? getTimelineByInstitution(institution.id) : Promise.resolve([]),
   ])
 
   const base = `/${institution.slug}`
-  const heroSlide = slides[0]
   const heroImage =
     heroSlide && typeof heroSlide.image === 'object' ? heroSlide.image?.url : null
 
   return (
     <main>
       <section
-        style={{
-          background: heroImage
-            ? `linear-gradient(135deg, rgba(11,59,96,0.85), rgba(11,59,96,0.6)), url(${heroImage}) center/cover`
-            : 'linear-gradient(135deg, var(--color-primary), #124d7c)',
-          color: '#fff',
-          padding: '80px 0',
-        }}
+        className="hero"
+        style={
+          heroImage
+            ? {
+                backgroundImage: `linear-gradient(135deg, rgba(14,34,64,0.82), rgba(14,34,64,0.45)), url(${heroImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
       >
-        <div className="container">
-          <h1 style={{ fontSize: '2.4rem', maxWidth: 680 }}>
-            {heroSlide?.headline || institution.name}
-          </h1>
-          <p style={{ maxWidth: 560, opacity: 0.9, marginTop: 12 }}>
+        <div className="container hero__inner">
+          <h1 className="hero__title">{heroSlide?.headline || institution.name}</h1>
+          <p className="hero__subtitle">
             {heroSlide?.subheadline || institution.shortDescription}
           </p>
-          <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+          <div className="hero__actions">
             <Link href={`${base}/cursos`} className="button">
               {heroSlide?.ctaLabel || 'Ver cursos'}
             </Link>
@@ -95,7 +100,7 @@ export default async function InstitutionHome({
       )}
 
       {news.length > 0 && (
-        <section className="section" style={{ background: '#f7f9fb' }}>
+        <section className="section section--alt">
           <div className="container">
             <h2 className="section-title">Notícias</h2>
             <div className="grid grid--3">
@@ -117,20 +122,6 @@ export default async function InstitutionHome({
                 )
               })}
             </div>
-          </div>
-        </section>
-      )}
-
-      {institution.type === 'mantenedora' && timeline.length > 0 && (
-        <section className="section">
-          <div className="container">
-            <h2 className="section-title">Nossa história</h2>
-            <p className="section-subtitle">
-              Uma trajetória de décadas dedicada à educação evangélica em Goiás.
-            </p>
-            <Link href={`${base}/linha-do-tempo`} style={{ color: 'var(--color-primary)', fontWeight: 600 }}>
-              Ver linha do tempo completa →
-            </Link>
           </div>
         </section>
       )}

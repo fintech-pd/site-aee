@@ -25,15 +25,18 @@ export default async function CourseDetailPage({
   return (
     <main>
       <section
-        style={{
-          background: cover
-            ? `linear-gradient(135deg, rgba(11,59,96,0.85), rgba(11,59,96,0.6)), url(${cover}) center/cover`
-            : 'linear-gradient(135deg, var(--color-primary), #124d7c)',
-          color: '#fff',
-          padding: '64px 0',
-        }}
+        className="hero hero--compact"
+        style={
+          cover
+            ? {
+                backgroundImage: `linear-gradient(135deg, rgba(14,34,64,0.85), rgba(14,34,64,0.5)), url(${cover})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
       >
-        <div className="container">
+        <div className="container hero__inner">
           <CourseStatusBadge status={course.status} />
           <h1 style={{ margin: '12px 0 8px', fontSize: '2.2rem' }}>{course.name}</h1>
           <p style={{ opacity: 0.9, maxWidth: 600 }}>{course.shortDescription}</p>

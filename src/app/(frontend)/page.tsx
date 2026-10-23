@@ -6,8 +6,8 @@ export const dynamic = 'force-dynamic'
 const TYPE_LABELS: Record<string, string> = {
   mantenedora: 'Mantenedora',
   basica: 'Educação Básica',
-  tecnica: 'Educação Técnica',
-  superior: 'Educação Superior',
+  tecnica: 'Formação Profissional',
+  superior: 'Ensino Superior',
 }
 
 export default async function HubPage() {
@@ -17,46 +17,38 @@ export default async function HubPage() {
 
   return (
     <main>
-      <header
-        style={{
-          background: 'linear-gradient(135deg, #0b3b60, #124d7c)',
-          color: '#fff',
-          padding: '72px 0',
-        }}
-      >
-        <div className="container">
-          <p style={{ textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.8 }}>
-            Associação Educativa Evangélica
-          </p>
-          <h1 style={{ fontSize: '2.6rem', maxWidth: 720, margin: '12px 0 16px' }}>
-            Educação evangélica de qualidade, da educação básica ao ensino superior
+      <section className="hero">
+        <div className="container hero__inner">
+          <p className="hero__eyebrow">Associação Educativa Evangélica · Desde 1947</p>
+          <h1 className="hero__title">
+            Educação que transforma gerações, da educação básica ao ensino superior
           </h1>
-          <p style={{ maxWidth: 640, opacity: 0.9 }}>
+          <p className="hero__subtitle">
             Mantenedora de instituições de ensino em Anápolis, Goianésia e Ceres — Goiás.
           </p>
           {mantenedora && (
-            <Link href={`/${mantenedora.slug}`} className="button" style={{ marginTop: 24 }}>
-              Conheça a mantenedora
-            </Link>
+            <div className="hero__actions">
+              <Link href={`/${mantenedora.slug}`} className="button">
+                Conheça a AEE
+              </Link>
+            </div>
           )}
         </div>
-      </header>
+      </section>
 
       <section className="section">
         <div className="container">
+          <p className="eyebrow">Rede educacional</p>
           <h2 className="section-title">Nossas instituições</h2>
           <p className="section-subtitle">
-            Rede educacional com instituições de educação básica, técnica e superior, todas
+            Instituições de educação básica, formação profissional e ensino superior, todas
             credenciadas junto ao Ministério da Educação (MEC).
           </p>
           <div className="grid grid--3">
             {others.map((inst) => (
               <Link key={inst.id} href={`/${inst.slug}`} className="card">
                 <div className="card__body">
-                  <span
-                    className="badge"
-                    style={{ background: '#eef3f8', color: '#0b3b60', alignSelf: 'flex-start' }}
-                  >
+                  <span className="badge badge--level" style={{ alignSelf: 'flex-start' }}>
                     {TYPE_LABELS[inst.type] || inst.type}
                   </span>
                   <h3 style={{ margin: '4px 0' }}>{inst.name}</h3>

@@ -8,10 +8,14 @@ export const institutionsSeed = [
     shortDescription:
       'Mantenedora de instituições de ensino básico, técnico e superior em Goiás, com décadas de tradição em educação evangélica.',
     about:
-      'A Associação Educativa Evangélica (AEE) é uma entidade sem fins lucrativos que mantém instituições de ensino em Goiás, atuando da educação básica ao ensino superior. Fundada com o propósito de oferecer educação de qualidade alicerçada em valores cristãos, a AEE hoje mantém colégios, uma escola técnica e faculdades reconhecidas pelo Ministério da Educação.',
+      'A Associação Educativa Evangélica (AEE) é uma instituição mantenedora fundada em 31 de março de 1947, em Anápolis, Goiás. Sua trajetória está relacionada à educação, à formação integral do indivíduo, à promoção do conhecimento e ao desenvolvimento social, fundamentados em princípios cristãos, valores éticos e responsabilidade social.\n\nA AEE reúne instituições de ensino de diferentes níveis e modalidades, com atuação em diversas cidades de Goiás. Sua presença institucional representa uma trajetória de tradição, compromisso com a educação e busca contínua pela excelência acadêmica.',
     mission: 'Promover educação de excelência, formando cidadãos íntegros e preparados para transformar a sociedade à luz dos valores cristãos.',
     vision: 'Ser reconhecida como referência em educação evangélica de qualidade em todos os níveis de ensino em Goiás.',
     values: 'Ética, excelência acadêmica, respeito à diversidade, compromisso social e fé cristã.',
+    governance:
+      'A governança da Associação Educativa Evangélica é exercida por meio de um Conselho Deliberativo, responsável pelas decisões estratégicas da mantenedora, e por uma Diretoria Executiva, responsável pela gestão administrativa e pedagógica das instituições mantidas.\n\nEssa estrutura garante a continuidade da missão institucional, a observância dos valores cristãos que orientam a Associação e a boa gestão dos recursos aplicados em benefício da educação.',
+    chaplaincy:
+      'A Capelania da AEE desenvolve ações voltadas ao cuidado espiritual e humano da comunidade educacional, promovendo valores como ética, solidariedade e respeito ao próximo em todas as instituições mantidas.\n\nAtravés de atividades de acolhimento, aconselhamento e eventos institucionais, a capelania reafirma o compromisso da Associação com a formação integral de estudantes, docentes e colaboradores.',
     contact: { phone: '(62) 3310-0000', email: 'contato@aee.edu.br' },
     campuses: [
       { name: 'Sede Administrativa', city: 'Anápolis', state: 'GO', address: 'Av. Universitária, s/n, Anápolis/GO' },
@@ -63,12 +67,13 @@ export const institutionsSeed = [
   },
   {
     slug: 'unievangelica',
-    name: 'Centro Universitário de Anápolis — UniEVANGÉLICA',
+    name: 'Universidade Evangélica de Goiás — UniEVANGÉLICA',
     shortName: 'UniEVANGÉLICA',
     type: 'superior' as const,
     city: 'Anápolis',
+    externalUrl: 'https://www4.unievangelica.edu.br/',
     shortDescription:
-      'Centro universitário com décadas de tradição, cursos de graduação e pós-graduação reconhecidos pelo MEC.',
+      'Instituição universitária com atuação no ensino superior, graduação, pós-graduação, pesquisa e extensão.',
     about:
       'A UniEVANGÉLICA é um centro universitário consolidado na região Centro-Oeste, oferecendo cursos de graduação, pós-graduação e extensão nas áreas de saúde, exatas, humanas e sociais aplicadas, sempre pautada pela busca da excelência acadêmica.',
     mission: 'Formar profissionais competentes e éticos, comprometidos com o desenvolvimento da sociedade.',
@@ -89,11 +94,12 @@ export const institutionsSeed = [
   },
   {
     slug: 'uniego',
-    name: 'Centro Universitário de Goiás — UNIEGO',
+    name: 'Centro Universitário Evangélico de Goianésia — UNIEGO',
     shortName: 'UNIEGO',
     type: 'superior' as const,
     city: 'Goianésia',
-    shortDescription: 'Instituição de ensino superior com cursos de graduação reconhecidos pelo MEC.',
+    externalUrl: 'https://uniego.edu.br',
+    shortDescription: 'Instituição de ensino superior sediada em Goianésia, com cursos de graduação reconhecidos pelo MEC.',
     about:
       'A UNIEGO oferece cursos de graduação presenciais e a distância, com infraestrutura moderna e corpo docente qualificado, contribuindo para o desenvolvimento regional através da formação de profissionais capacitados.',
     mission: 'Promover educação superior de qualidade, acessível e comprometida com o desenvolvimento regional.',
@@ -113,11 +119,12 @@ export const institutionsSeed = [
   },
   {
     slug: 'faculdade-raizes',
-    name: 'Faculdade Raízes',
+    name: 'Faculdade Evangélica Raízes',
     shortName: 'Raízes',
     type: 'superior' as const,
     city: 'Anápolis',
-    shortDescription: 'Faculdade com cursos de graduação focados no mercado de trabalho regional.',
+    externalUrl: 'https://faculdaderaizes.edu.br',
+    shortDescription: 'Instituição de ensino superior localizada em Anápolis, com cursos de graduação focados no mercado de trabalho regional.',
     about:
       'A Faculdade Raízes forma profissionais nas áreas de gestão, educação e tecnologia, com metodologias ativas de ensino e forte conexão com o mercado de trabalho local.',
     mission: 'Formar profissionais preparados para os desafios do mercado de trabalho contemporâneo.',
@@ -137,7 +144,7 @@ export const institutionsSeed = [
   },
   {
     slug: 'florence-nightingale',
-    name: 'Escola Técnica Florence Nightingale',
+    name: 'Escola de Enfermagem Florence Nightingale',
     shortName: 'Florence Nightingale',
     type: 'tecnica' as const,
     city: 'Anápolis',
@@ -159,16 +166,73 @@ export const institutionsSeed = [
 ]
 
 export const timelineSeed = [
-  { year: 1965, title: 'Fundação da Associação Educativa Evangélica', description: 'Início das atividades da mantenedora em Anápolis, Goiás.' },
-  { year: 1968, title: 'Criação do Colégio Couto Magalhães', description: 'Abertura da primeira unidade de educação básica da rede.' },
+  { year: 1947, title: 'Fundação da Associação Educativa Evangélica', description: 'Em 31 de março de 1947, a AEE inicia suas atividades em Anápolis, Goiás, dedicada à educação e à formação integral do indivíduo.' },
+  { year: 1968, title: 'Criação do Colégio Couto Magalhães', description: 'Abertura da primeira unidade de educação básica da rede, em Anápolis.' },
   { year: 1985, title: 'Expansão para Goianésia', description: 'Inauguração da unidade do Colégio Couto Magalhães em Goianésia.' },
   { year: 1992, title: 'Fundação do Colégio Álvaro de Melo', description: 'Chegada da rede educacional ao município de Ceres.' },
-  { year: 2001, title: 'Criação da UniEVANGÉLICA', description: 'Início do ensino superior na rede, com os primeiros cursos de graduação.' },
-  { year: 2010, title: 'Fundação da Escola Técnica Florence Nightingale', description: 'Início da oferta de cursos técnicos na área da saúde.' },
-  { year: 2015, title: 'Credenciamento da UNIEGO', description: 'Expansão do ensino superior para a região de Goianésia.' },
-  { year: 2018, title: 'Criação da Faculdade Raízes', description: 'Nova frente de ensino superior com foco em empregabilidade.' },
+  { year: 2001, title: 'Criação da UniEVANGÉLICA', description: 'Início do ensino superior na rede, com os primeiros cursos de graduação, pós-graduação, pesquisa e extensão.' },
+  { year: 2010, title: 'Fundação da Escola de Enfermagem Florence Nightingale', description: 'Início da oferta de formação profissional na área da saúde.' },
+  { year: 2015, title: 'Credenciamento da UNIEGO', description: 'Expansão do ensino superior para a região de Goianésia, com o Centro Universitário Evangélico de Goianésia.' },
+  { year: 2018, title: 'Criação da Faculdade Evangélica Raízes', description: 'Nova frente de ensino superior em Anápolis, com foco em empregabilidade.' },
   { year: 2024, title: 'Modernização digital da rede', description: 'Lançamento da nova plataforma digital integrada das instituições da AEE.' },
 ]
+
+export const siteStatsSeed = {
+  foundingYear: 1947,
+  studentsCount: '20.000+',
+  institutionsCount: 6,
+  citiesCount: 3,
+  socialProjectsCount: '10+',
+  notes:
+    'Números ilustrativos para fins de lançamento do portal — devem ser confirmados e atualizados pela AEE, com indicação da data de referência.',
+}
+
+export const socialProjectsSeed: Array<{
+  title: string
+  slug: string
+  category: 'educacional' | 'inclusao' | 'cultural' | 'desenvolvimento_humano' | 'outro'
+  summary: string
+  description: string
+  results?: Array<{ value: string; label: string }>
+}> = [
+  {
+    title: 'Programa de Bolsas e Inclusão Educacional',
+    slug: 'programa-bolsas-inclusao-educacional',
+    category: 'inclusao' as const,
+    summary: 'Concessão de bolsas de estudo a estudantes em situação de vulnerabilidade social nas instituições da rede.',
+    description:
+      'O programa oferece bolsas parciais e integrais a estudantes de baixa renda, ampliando o acesso à educação de qualidade em todos os níveis de ensino mantidos pela AEE.',
+    results: [
+      { value: '500+', label: 'Bolsas concedidas' },
+      { value: '3', label: 'Cidades atendidas' },
+    ],
+  },
+  {
+    title: 'Ação Comunitária de Saúde e Cidadania',
+    slug: 'acao-comunitaria-saude-cidadania',
+    category: 'desenvolvimento_humano' as const,
+    summary: 'Atendimentos gratuitos de saúde e orientação social para comunidades em situação de vulnerabilidade.',
+    description:
+      'Em parceria com os cursos da área de saúde, a ação leva atendimentos básicos, orientação e acolhimento a comunidades da região, promovendo cidadania e desenvolvimento humano.',
+    results: [
+      { value: '2.500+', label: 'Pessoas atendidas por ano' },
+    ],
+  },
+  {
+    title: 'Festival Cultural AEE',
+    slug: 'festival-cultural-aee',
+    category: 'cultural' as const,
+    summary: 'Evento anual que celebra a produção cultural e artística dos estudantes da rede.',
+    description:
+      'O Festival Cultural reúne apresentações musicais, teatrais e exposições produzidas por estudantes de todas as instituições mantidas, fortalecendo a identidade e os valores da comunidade educacional.',
+  },
+]
+
+// Observação: documentos (Documents) não são populados pelo seed porque a collection exige um
+// arquivo real (PDF) no upload — não há como gerar um placeholder útil automaticamente. Esses
+// registros devem ser cadastrados manualmente no painel /admin, em "Transparência" →
+// "Documentos", com os arquivos reais fornecidos pela AEE (estatuto, relatórios, política de
+// privacidade etc.).
 
 export const coursesSeed: Record<
   string,

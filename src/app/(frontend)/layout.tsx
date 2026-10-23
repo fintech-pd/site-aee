@@ -1,15 +1,33 @@
 import React from 'react'
+import { Inter, Montserrat } from 'next/font/google'
 import './globals.css'
 
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-montserrat',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
 export const metadata = {
-  title: 'Associação Educativa Evangélica',
+  title: {
+    default: 'Associação Educativa Evangélica',
+    template: '%s | AEE',
+  },
   description:
-    'Rede de instituições de ensino básico, técnico e superior mantidas pela Associação Educativa Evangélica (AEE).',
+    'Rede de instituições de ensino básico, técnico e superior mantidas pela Associação Educativa Evangélica (AEE), desde 1947.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${montserrat.variable} ${inter.variable}`}>
       <body>{children}</body>
     </html>
   )

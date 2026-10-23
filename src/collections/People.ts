@@ -24,6 +24,7 @@ export const People: CollectionConfig = {
       defaultValue: 'coordenacao',
       options: [
         { label: 'Diretoria / Mantenedora', value: 'diretoria' },
+        { label: 'Conselho Deliberativo', value: 'conselho' },
         { label: 'Reitoria / Direção Geral', value: 'reitoria' },
         { label: 'Coordenação de Curso', value: 'coordenacao' },
         { label: 'Núcleo Docente Estruturante (NDE)', value: 'nde' },

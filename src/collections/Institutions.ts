@@ -61,6 +61,15 @@ export const Institutions: CollectionConfig = {
       },
     },
     {
+      name: 'externalUrl',
+      type: 'text',
+      label: 'Site oficial (link externo)',
+      admin: {
+        description:
+          'Se preenchido, os cards de "Nossas mantidas" no site da mantenedora apontam para este link em vez da página interna desta instituição.',
+      },
+    },
+    {
       name: 'logo',
       type: 'upload',
       relationTo: 'media',
@@ -81,8 +90,8 @@ export const Institutions: CollectionConfig = {
       type: 'group',
       label: 'Identidade visual',
       fields: [
-        { name: 'primaryColor', type: 'text', defaultValue: '#0B3B60', admin: { description: 'Cor primária (hex)' } },
-        { name: 'secondaryColor', type: 'text', defaultValue: '#F2A900', admin: { description: 'Cor secundária (hex)' } },
+        { name: 'primaryColor', type: 'text', defaultValue: '#17365D', admin: { description: 'Cor primária (hex)' } },
+        { name: 'secondaryColor', type: 'text', defaultValue: '#B89553', admin: { description: 'Cor secundária (hex)' } },
       ],
     },
     {
@@ -190,6 +199,23 @@ export const Institutions: CollectionConfig = {
         { name: 'document', type: 'upload', relationTo: 'media', label: 'Organograma (imagem)' },
         { name: 'description', type: 'richText', label: 'Descrição da estrutura organizacional' },
       ],
+    },
+    {
+      name: 'governance',
+      type: 'richText',
+      label: 'Governança institucional',
+      admin: {
+        description:
+          'Texto sobre a governança institucional (conselho deliberativo e demais estruturas de gestão). Usado principalmente pela mantenedora.',
+      },
+    },
+    {
+      name: 'chaplaincy',
+      type: 'richText',
+      label: 'Capelania',
+      admin: {
+        description: 'Texto sobre a capelania e iniciativas relacionadas aos valores institucionais.',
+      },
     },
   ],
 }

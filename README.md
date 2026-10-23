@@ -14,6 +14,21 @@ instituições de ensino da rede:
 Um único CMS gerencia o conteúdo de todos os sites (multi-tenant), cada um com sua própria
 identidade visual, domínio e conteúdo.
 
+O site da **mantenedora (AEE)** segue uma estrutura institucional própria — mais ampla que a das
+demais instituições — com seções de governança, conselho deliberativo, capelania, publicações
+institucionais, "nossas mantidas", responsabilidade social, transparência e contato, conforme o
+briefing institucional do projeto. As demais instituições mantêm uma estrutura mais comercial,
+focada em cursos, notícias e eventos.
+
+## Identidade visual
+
+- **Azul institucional** `#17365D` — cor primária (cabeçalhos, títulos, menus).
+- **Dourado** `#B89553` — cor secundária (detalhes, botões, destaques).
+- **Tipografia**: Montserrat (títulos) + Inter (texto), carregadas via `next/font/google` em
+  `src/app/(frontend)/layout.tsx`.
+- Cada instituição pode sobrescrever `theme.primaryColor` / `theme.secondaryColor` no painel
+  (campo "Identidade visual" em Institutions), preservando sua autonomia visual.
+
 ## Stack
 
 - **Next.js 16** (App Router) para o front-end público e as rotas de API.
@@ -35,16 +50,47 @@ identidade visual, domínio e conteúdo.
 | `slides` | Banners/carrossel da home de cada instituição. |
 | `timeline-entries` | Linha do tempo histórica (usada principalmente na mantenedora). |
 | `pages` | Páginas institucionais genéricas (CMS livre) por instituição. |
+| `social-projects` | Projetos de responsabilidade social (programas, inclusão, cultura, desenvolvimento humano), com resultados/impactos numéricos. |
+| `documents` | Documentos para download (PDF): transparência (relatórios, estatuto, políticas) ou publicações institucionais. |
+| `contact-messages` | Mensagens recebidas pelo formulário de contato (leitura restrita à equipe — dados pessoais/LGPD). |
 | `media` | Biblioteca de mídia (imagens). |
 | `users` | Usuários do painel administrativo, com permissão por instituição. |
+
+Além das collections, há o **Global** `site-stats` ("AEE em Números"): ano de fundação, nº de
+estudantes, nº de instituições/cidades, nº de projetos sociais — editável em `/admin` em
+**Globals → AEE em Números**.
+
+### Campos institucionais específicos da mantenedora
+
+Na collection `institutions`, os campos abaixo existem para qualquer instituição mas são usados
+principalmente pela AEE:
+
+- `externalUrl` — se preenchido, os cards de "Nossas mantidas" apontam para esse link externo em
+  vez da página interna da instituição (usado hoje por UniEVANGÉLICA, UNIEGO e Faculdade Raízes).
+- `governance` — texto de governança institucional (conselho deliberativo e estrutura de gestão).
+- `chaplaincy` — texto sobre a capelania.
+
+A categoria **Conselho Deliberativo** na collection `people` lista os membros exibidos em
+`/institucional/conselho`.
 
 ## Rotas do site público
 
 - `/` — hub com lista de todas as instituições.
-- `/[instituicao]` — home da instituição (slides, cursos em oferta, notícias, linha do tempo).
+- `/[instituicao]` — home da instituição. Para a mantenedora (`type: mantenedora`), renderiza a
+  home institucional completa (hero, AEE em números, nossa rede de ensino, história e legado,
+  responsabilidade social, notícias e eventos). Para as demais, a home comercial padrão (slides,
+  cursos em oferta, notícias).
 - `/[instituicao]/sobre` — página institucional aprovada pelo MEC (missão, visão, valores, história, credenciamento).
 - `/[instituicao]/matriz` — estrutura organizacional / organograma / unidades.
 - `/[instituicao]/coordenacao` — diretoria, coordenação de curso, NDE, docentes.
+- `/[instituicao]/institucional/governanca` — governança institucional.
+- `/[instituicao]/institucional/conselho` — conselho deliberativo (lista de pessoas, categoria `conselho`).
+- `/[instituicao]/institucional/capelania` — capelania.
+- `/[instituicao]/institucional/publicacoes` — publicações institucionais (documentos, seção `publicacoes`).
+- `/[instituicao]/mantidas` — nossas mantidas, agrupadas por nível de ensino, com link externo ou interno.
+- `/[instituicao]/responsabilidade-social`, `/[instituicao]/responsabilidade-social/[slug]` — projetos sociais.
+- `/[instituicao]/transparencia` — documentos de transparência (seção `transparencia`).
+- `/[instituicao]/contato` — formulário de contato (LGPD + honeypot anti-spam).
 - `/[instituicao]/cursos` — listagem comercial de cursos, com filtro por status (`?status=oferta`, `suspenso`, `em_breve`, `encerrado`).
 - `/[instituicao]/cursos/[slug]` — página do curso com atos legais do MEC.
 - `/[instituicao]/noticias`, `/[instituicao]/noticias/[slug]`
@@ -52,7 +98,8 @@ identidade visual, domínio e conteúdo.
 - `/[instituicao]/linha-do-tempo`
 - `/[instituicao]/paginas/[slug]` — páginas institucionais livres (CMS)
 
-Painel administrativo: `/admin`. API REST: `/api/*`. GraphQL: `/api/graphql` (playground em `/api/graphql-playground`).
+Painel administrativo: `/admin`. API REST: `/api/*`. GraphQL: `/api/graphql` (playground em
+`/api/graphql-playground`). Formulário de contato: `POST /api/contact`.
 
 ## Como rodar localmente
 
@@ -85,9 +132,12 @@ Com o servidor rodando (dev ou produção), execute uma vez:
 curl -X POST http://localhost:3000/api/seed -H "x-migrate-secret: SEU_MIGRATE_SECRET"
 ```
 
-Isso cria as 7 instituições, linha do tempo da mantenedora, cursos de exemplo (incluindo o caso
-"sub judice" citado no briefing), notícias, eventos e registros de coordenação/diretoria a serem
-completados no painel. A operação é idempotente (não duplica dados se já existirem instituições).
+Isso cria as 7 instituições, linha do tempo da mantenedora (fundação em 1947), cursos de exemplo
+(incluindo o caso "sub judice" citado no briefing), notícias, eventos, projetos de
+responsabilidade social, os números institucionais ("AEE em números") e registros de
+coordenação/diretoria/conselho a serem completados no painel. Documentos (PDF) de transparência e
+publicações **não são gerados pelo seed** — precisam ser cadastrados manualmente em `/admin` com
+os arquivos reais. A operação de seed é idempotente (não duplica dados se já existirem instituições).
 **São dados fictícios/placeholder** — a ideia é começar com uma estrutura pronta para editar no
 `/admin`, não para ir ao ar como está. Veja `src/app/(payload)/api/seed/route.ts`.
 
@@ -240,3 +290,13 @@ rode `npm run generate:types` normalmente para regenerar esse arquivo automatica
    esquema), adequado para o estágio atual do projeto. Para uma operação mais madura, vale gerar
    migrations versionadas (arquivos SQL no controle de versão) com `payload migrate:create`,
    assumindo que o ambiente usado não tenha o problema de `tsx` descrito acima.
+6. **Validação institucional**: conforme observado no briefing, a relação definitiva das
+   mantidas (nomes oficiais, níveis de ensino, unidades, links externos) e os logotipos/manual de
+   identidade visual devem ser confirmados com a AEE antes do lançamento público.
+7. **Anti-spam do formulário de contato**: a proteção atual (campo honeypot + limite de 1 envio
+   por IP a cada 30s) é leve e não depende de serviços externos. Para tráfego maior, considere
+   adicionar um captcha (ex: Cloudflare Turnstile, reCAPTCHA) ao formulário em
+   `src/components/ContactForm.tsx` e `src/app/(payload)/api/contact/route.ts`.
+8. **Notificação de novas mensagens**: hoje as mensagens de contato só ficam visíveis em
+   `/admin → Contact Messages`. Configurar um adapter de e-mail (ver item 3) permite notificar a
+   equipe automaticamente a cada novo envio.
