@@ -1,0 +1,140 @@
+:root {
+  --color-primary: #0b3b60;
+  --color-secondary: #f2a900;
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #5b6672;
+  --color-border: #e3e7eb;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --max-width: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.button {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 6px;
+  background: var(--color-secondary);
+  color: #1a1a1a;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.button--outline {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge--oferta {
+  background: #e3f6e8;
+  color: #1a7a3c;
+}
+
+.badge--suspenso {
+  background: #fce9e9;
+  color: #b3261e;
+}
+
+.badge--em_breve {
+  background: #fff3da;
+  color: #9a6400;
+}
+
+.badge--encerrado {
+  background: #eceff1;
+  color: #5b6672;
+}
+
+.section {
+  padding: 56px 0;
+}
+
+.section-title {
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+  color: var(--color-primary);
+}
+
+.section-subtitle {
+  color: var(--color-muted);
+  margin-bottom: 32px;
+  max-width: 640px;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+.grid--3 {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.card__body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.card__image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  background: var(--color-border);
+}
