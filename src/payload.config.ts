@@ -2,6 +2,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { pushDevSchema } from '@payloadcms/drizzle'
+import type { DrizzleAdapter } from '@payloadcms/drizzle/types'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import sharp from 'sharp'
@@ -43,6 +45,27 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || 'aee-dev-secret-change-me',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
+  // Sincroniza automaticamente o esquema do banco (cria/atualiza tabelas) a cada vez que o
+  // servidor inicia — inclusive em produção, onde o Payload normalmente só faz isso em
+  // desenvolvimento. Dispensa rodar `/api/migrate` manualmente após um deploy (ex: no Render).
+  // Como as mudanças de esquema deste projeto são sempre aditivas (novas collections/campos),
+  // isso é seguro; mudanças que o Drizzle considerar potencialmente destrutivas pedem
+  // confirmação interativa, então evite remover/renomear campos em produção sem rodar
+  // `/api/migrate` manualmente primeiro e observar os logs. Defina AUTO_MIGRATE=false para
+  // desativar esse comportamento.
+  onInit: async (payload) => {
+    if (process.env.AUTO_MIGRATE === 'false') return
+    try {
+      await pushDevSchema(payload.db as unknown as DrizzleAdapter)
+      payload.logger.info('[AUTO_MIGRATE] Esquema do banco de dados sincronizado.')
+    } catch (error) {
+      payload.logger.error(
+        `[AUTO_MIGRATE] Falha ao sincronizar esquema do banco: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    }
   },
   db: postgresAdapter({
     pool: {

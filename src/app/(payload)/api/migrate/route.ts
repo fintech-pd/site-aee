@@ -3,14 +3,16 @@ import { pushDevSchema } from '@payloadcms/drizzle'
 import type { DrizzleAdapter } from '@payloadcms/drizzle/types'
 import { getPayloadClient } from '@/lib/payload'
 
-// Endpoint protegido para sincronizar o esquema do banco de dados (criar/atualizar tabelas)
-// em produção, sem depender do comando `payload migrate` via CLI.
+// Endpoint protegido para sincronizar manualmente o esquema do banco de dados (criar/atualizar
+// tabelas). Desde que o hook `onInit` do payload.config.ts foi adicionado, isso já acontece
+// automaticamente a cada boot do servidor — este endpoint existe como forma manual de forçar
+// a sincronização sem reiniciar o serviço (ou quando AUTO_MIGRATE=false).
 //
-// Motivo: neste projeto, o CLI do Payload (que usa a ferramenta `tsx` para rodar arquivos
-// TypeScript) apresenta um bug de incompatibilidade com `undici`/Node.js em alguns ambientes.
-// Este endpoint reaproveita a mesma infraestrutura que já roda o site (bundler do Next.js) para
-// aplicar o esquema das collections diretamente no banco, de forma segura para uma sincronização
-// aditiva (criação de tabelas novas / colunas novas). Veja README.md para instruções de uso.
+// Motivo de não depender do comando `payload migrate` via CLI: neste projeto, o CLI do Payload
+// (que usa a ferramenta `tsx` para rodar arquivos TypeScript) apresenta um bug de
+// incompatibilidade com `undici`/Node.js em alguns ambientes. Este endpoint reaproveita a mesma
+// infraestrutura que já roda o site (bundler do Next.js) para aplicar o esquema das collections
+// diretamente no banco. Veja README.md.
 //
 // Protegido por um segredo (MIGRATE_SECRET) que deve ser definido nas variáveis de ambiente.
 export async function POST(request: Request) {

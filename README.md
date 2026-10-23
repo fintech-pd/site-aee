@@ -67,9 +67,11 @@ npm run dev
 Acesse `http://localhost:3000`. No primeiro acesso ao `/admin`, o Payload pedirá a criação do
 usuário administrador inicial.
 
-Como não há mais SQLite, você precisa criar as tabelas no banco antes do primeiro uso (em
-desenvolvimento isso também acontece automaticamente ao rodar `npm run dev`, mas o endpoint abaixo
-funciona em qualquer ambiente, incluindo produção):
+As tabelas do banco são criadas **automaticamente** na primeira requisição que inicializa o
+Payload (hook `onInit` em `payload.config.ts`) — não é preciso rodar nenhum comando antes de usar
+o site, nem em desenvolvimento nem em produção (ver `AUTO_MIGRATE` mais abaixo). Se quiser forçar
+a sincronização manualmente em algum momento (ex: depois de adicionar um campo novo), o endpoint
+abaixo também funciona a qualquer momento:
 
 ```bash
 curl -X POST http://localhost:3000/api/migrate -H "x-migrate-secret: SEU_MIGRATE_SECRET"
@@ -136,6 +138,7 @@ testar localmente contra o mesmo Supabase, também no seu `.env`:
 | `SUPABASE_S3_BUCKET` | O nome do bucket criado no passo 2 (ex: `media`). |
 | `SUPABASE_S3_ACCESS_KEY_ID` | O Access Key ID gerado no passo 2. |
 | `SUPABASE_S3_SECRET_ACCESS_KEY` | O Secret Access Key gerado no passo 2. |
+| `AUTO_MIGRATE` | Opcional. Deixe sem definir (padrão: sincronização automática ativada). Defina `false` para desativar a sincronização automática do esquema a cada boot — ver seção 5. |
 
 Se `SUPABASE_S3_ENDPOINT` não estiver definido, o projeto usa o disco local para uploads (só
 funciona bem em desenvolvimento — em produção no Render os arquivos seriam perdidos a cada deploy,
@@ -158,15 +161,19 @@ então configure essas variáveis antes de ir ao ar).
 
 ### 5. Primeira sincronização do banco e dos dados
 
-Depois que o deploy terminar e o serviço estiver "Live" (ex: `https://site-aee.onrender.com`),
-rode **uma única vez**, da sua máquina:
+**As tabelas são criadas automaticamente** — não é preciso rodar nada manualmente. Assim que o
+deploy termina e o serviço fica "Live", a primeira requisição que chegar ao site (ou ao `/admin`)
+dispara o hook `onInit` do Payload, que sincroniza o esquema do banco no Supabase. Você pode
+confirmar isso nos **Logs** do Render, procurando pela linha:
+
+```
+[AUTO_MIGRATE] Esquema do banco de dados sincronizado.
+```
+
+Se quiser já começar com a estrutura de exemplo das 7 instituições (dados fictícios, para editar
+depois), rode uma vez, da sua máquina:
 
 ```bash
-# 1) Cria todas as tabelas no Postgres do Supabase
-curl -X POST https://SEU-APP.onrender.com/api/migrate \
-  -H "x-migrate-secret: O_MESMO_VALOR_DE_MIGRATE_SECRET"
-
-# 2) (opcional) Popula com a estrutura de exemplo das 7 instituições
 curl -X POST https://SEU-APP.onrender.com/api/seed \
   -H "x-migrate-secret: O_MESMO_VALOR_DE_MIGRATE_SECRET"
 ```
@@ -174,14 +181,25 @@ curl -X POST https://SEU-APP.onrender.com/api/seed \
 Depois disso, acesse `https://SEU-APP.onrender.com/admin` para criar o usuário administrador e
 começar a editar o conteúdo real de cada instituição.
 
-> **Por que não usamos `payload migrate` (CLI)?** O comando oficial do Payload roda arquivos
-> TypeScript através da ferramenta `tsx`, que neste projeto apresentou um bug de incompatibilidade
-> com `undici`/Node.js em alguns ambientes (erro "Illegal constructor" em `CacheStorage`). O
-> endpoint `/api/migrate` aplica o mesmo resultado (criação/atualização das tabelas) reaproveitando
-> o bundler do próprio Next.js, que não tem esse problema. Se quiser tentar o CLI oficial em algum
-> momento (`npm run payload migrate:create`, por exemplo, para gerar migrations versionadas em
-> vez de usar o push automático), teste antes num ambiente separado — pode funcionar normalmente
-> dependendo da versão do Node/tsx disponível.
+> **Mudou um campo e quer forçar a sincronização sem esperar a próxima requisição?** Rode:
+> ```bash
+> curl -X POST https://SEU-APP.onrender.com/api/migrate \
+>   -H "x-migrate-secret: O_MESMO_VALOR_DE_MIGRATE_SECRET"
+> ```
+> **Por que a sincronização automática existe em vez do `payload migrate` (CLI)?** O comando
+> oficial do Payload roda arquivos TypeScript através da ferramenta `tsx`, que neste projeto
+> apresentou um bug de incompatibilidade com `undici`/Node.js em alguns ambientes (erro "Illegal
+> constructor" em `CacheStorage`). O hook `onInit` e o endpoint `/api/migrate` aplicam o mesmo
+> resultado (criação/atualização das tabelas) reaproveitando o bundler do próprio Next.js, que não
+> tem esse problema.
+>
+> **Atenção para alterações futuras de esquema**: a sincronização automática (`push`) é segura
+> para mudanças aditivas (nova collection, novo campo). Para mudanças que o Drizzle considerar
+> potencialmente destrutivas (remover/renomear um campo, mudar o tipo de uma coluna com dados),
+> o processo pediria uma confirmação interativa — o que **trava o boot do servidor** num ambiente
+> sem terminal interativo como o Render. Nesse caso, defina `AUTO_MIGRATE=false` temporariamente,
+> faça a alteração com mais cuidado (manualmente no banco, ou testando `payload migrate:create`
+> em um ambiente onde o CLI funcione) e reative depois.
 
 ### 6. Domínio próprio
 
