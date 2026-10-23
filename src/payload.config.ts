@@ -1,8 +1,9 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users.ts'
@@ -43,11 +44,39 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URI || 'file:' + path.resolve(dirname, '../aee.db'),
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI,
+      // O Supabase exige SSL. Conexões locais (ex: Postgres no seu próprio computador,
+      // sem "supabase.co"/"supabase.com" na string de conexão) não precisam de SSL.
+      ssl: process.env.DATABASE_URI?.includes('supabase')
+        ? { rejectUnauthorized: false }
+        : undefined,
     },
   }),
   sharp,
   cors: ['*'],
+  plugins: [
+    // Armazena os arquivos de mídia no Supabase Storage (compatível com S3) em vez do disco
+    // local. Necessário em produção no Render, cujo sistema de arquivos é efêmero (os uploads
+    // seriam perdidos a cada novo deploy/reinício). Em desenvolvimento, sem essas variáveis de
+    // ambiente configuradas, o plugin fica desabilitado e os uploads continuam indo para
+    // ./media (disco local). Veja o README para o passo a passo de configuração no Supabase.
+    s3Storage({
+      enabled: Boolean(process.env.SUPABASE_S3_ENDPOINT),
+      collections: {
+        media: true,
+      },
+      bucket: process.env.SUPABASE_S3_BUCKET || 'media',
+      config: {
+        endpoint: process.env.SUPABASE_S3_ENDPOINT,
+        region: process.env.SUPABASE_S3_REGION || 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.SUPABASE_S3_SECRET_ACCESS_KEY || '',
+        },
+        forcePathStyle: true,
+      },
+    }),
+  ],
 })

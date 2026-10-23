@@ -3,11 +3,22 @@ import { getPayloadClient } from '@/lib/payload'
 import { richTextFromText } from '@/lib/richtext'
 import { institutionsSeed, timelineSeed, coursesSeed } from '@/lib/seed-data'
 
-// Endpoint de desenvolvimento para popular o banco com dados iniciais.
-// Não deve ser exposto em produção — ver README.md.
-export async function POST() {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Seed desabilitado em produção.' }, { status: 403 })
+// Popula o banco com as 7 instituições e conteúdo de EXEMPLO (textos genéricos a serem
+// substituídos pelo conteúdo real no painel /admin). Protegido pelo mesmo segredo usado em
+// /api/migrate — use apenas uma vez, logo após o primeiro deploy, para começar com uma
+// estrutura de dados pronta. Veja README.md.
+export async function POST(request: Request) {
+  const secret = process.env.MIGRATE_SECRET
+  if (!secret) {
+    return NextResponse.json(
+      { error: 'MIGRATE_SECRET não configurado nas variáveis de ambiente.' },
+      { status: 500 },
+    )
+  }
+
+  const provided = request.headers.get('x-migrate-secret')
+  if (provided !== secret) {
+    return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
   }
 
   const payload = await getPayloadClient()

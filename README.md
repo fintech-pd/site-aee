@@ -18,9 +18,10 @@ identidade visual, domínio e conteúdo.
 
 - **Next.js 16** (App Router) para o front-end público e as rotas de API.
 - **Payload CMS 3**, rodando embutido no mesmo app Next.js (painel administrativo em `/admin`).
-- **SQLite** como banco de dados padrão (fácil de rodar localmente). Para produção, recomenda-se
-  migrar para Postgres (`@payloadcms/db-postgres`), especialmente diante de múltiplas instituições
-  e volume de conteúdo/mídia.
+- **Postgres** como banco de dados (`@payloadcms/db-postgres`), hospedado no **Supabase**.
+- **Render** como serviço de hospedagem (Web Service Node.js).
+- **Supabase Storage** (compatível com S3) para os arquivos de mídia (imagens), já que o
+  sistema de arquivos do Render é efêmero.
 
 ## Estrutura de conteúdo (collections do Payload)
 
@@ -55,28 +56,139 @@ Painel administrativo: `/admin`. API REST: `/api/*`. GraphQL: `/api/graphql` (pl
 
 ## Como rodar localmente
 
+Você precisa de um Postgres rodando (local ou já o seu projeto do Supabase — ver seção abaixo).
+
 ```bash
 npm install
-cp .env.example .env   # ajuste PAYLOAD_SECRET em produção
+cp .env.example .env   # edite DATABASE_URI, PAYLOAD_SECRET e MIGRATE_SECRET
 npm run dev
 ```
 
 Acesse `http://localhost:3000`. No primeiro acesso ao `/admin`, o Payload pedirá a criação do
 usuário administrador inicial.
 
-### Popular dados de exemplo
-
-Com o servidor de desenvolvimento rodando, execute uma vez:
+Como não há mais SQLite, você precisa criar as tabelas no banco antes do primeiro uso (em
+desenvolvimento isso também acontece automaticamente ao rodar `npm run dev`, mas o endpoint abaixo
+funciona em qualquer ambiente, incluindo produção):
 
 ```bash
-curl -X POST http://localhost:3000/api/seed
+curl -X POST http://localhost:3000/api/migrate -H "x-migrate-secret: SEU_MIGRATE_SECRET"
+```
+
+### Popular dados de exemplo
+
+Com o servidor rodando (dev ou produção), execute uma vez:
+
+```bash
+curl -X POST http://localhost:3000/api/seed -H "x-migrate-secret: SEU_MIGRATE_SECRET"
 ```
 
 Isso cria as 7 instituições, linha do tempo da mantenedora, cursos de exemplo (incluindo o caso
 "sub judice" citado no briefing), notícias, eventos e registros de coordenação/diretoria a serem
-completados no painel. A operação é idempotente (não duplica dados se já existirem instituições)
-e **fica desabilitada automaticamente em produção** (`NODE_ENV=production`). Veja
-`src/app/(payload)/api/seed/route.ts`.
+completados no painel. A operação é idempotente (não duplica dados se já existirem instituições).
+**São dados fictícios/placeholder** — a ideia é começar com uma estrutura pronta para editar no
+`/admin`, não para ir ao ar como está. Veja `src/app/(payload)/api/seed/route.ts`.
+
+## Deploy: Render + Supabase
+
+### 1. Criar o projeto no Supabase (banco de dados)
+
+1. Acesse [supabase.com](https://supabase.com) → **New project**.
+2. Escolha organização, nome do projeto (ex: `site-aee`), uma **senha do banco** forte (anote-a,
+   vai precisar dela na connection string) e a região mais próxima (ex: South America / `sa-east-1`
+   se disponível, ou a região norte-americana mais próxima).
+3. Aguarde o provisionamento (1–2 minutos).
+4. Vá em **Project Settings → Database → Connection string**.
+5. Use a aba **Session pooler** (recomendado para serviços como o Render, que não garantem
+   conectividade IPv6 de saída — o "Direct connection" exige IPv6). A string terá este formato:
+
+   ```
+   postgresql://postgres.xxxxxxxxxxxxxxxx:[SUA-SENHA]@aws-0-<regiao>.pooler.supabase.com:5432/postgres
+   ```
+
+   Substitua `[SUA-SENHA]` pela senha do banco definida no passo 2. Essa é a sua `DATABASE_URI`.
+
+### 2. Criar o bucket de mídia no Supabase Storage
+
+1. No painel do Supabase, vá em **Storage** → **New bucket**.
+2. Nome: `media` (ou outro nome — você vai usar no `SUPABASE_S3_BUCKET`). Marque como **Public
+   bucket** (as imagens do site precisam ser acessíveis publicamente).
+3. Vá em **Project Settings → Storage → S3 Connection** (também chamado "S3 Access Keys" em
+   algumas versões do painel):
+   - Copie o **Endpoint** (algo como `https://<project-ref>.storage.supabase.co/storage/v1/s3` ou
+     `https://<project-ref>.supabase.co/storage/v1/s3`, dependendo da versão do painel).
+   - Copie a **Region** mostrada ali (ex: `sa-east-1` ou `us-east-1`).
+   - Clique em **New access key** (ou "Generate new S3 credentials") para gerar um **Access Key
+     ID** e uma **Secret Access Key**. Guarde os dois — a secret só é exibida uma vez.
+
+### 3. Variáveis de ambiente
+
+Estas são **todas** as variáveis que o projeto usa. Configure-as no Render (passo 4) e, se quiser
+testar localmente contra o mesmo Supabase, também no seu `.env`:
+
+| Variável | O que colocar |
+|---|---|
+| `PAYLOAD_SECRET` | Uma string aleatória longa e única (ex: gere com `openssl rand -base64 32`). Nunca reaproveite o valor de exemplo. |
+| `DATABASE_URI` | A connection string do **Session pooler** do Supabase (passo 1.5). |
+| `MIGRATE_SECRET` | Outra string aleatória (ex: `openssl rand -base64 32`). Protege os endpoints `/api/migrate` e `/api/seed`. |
+| `SUPABASE_S3_ENDPOINT` | O endpoint S3 copiado no passo 2 (ex: `https://<project-ref>.storage.supabase.co/storage/v1/s3`). |
+| `SUPABASE_S3_REGION` | A região copiada no passo 2 (ex: `sa-east-1`). |
+| `SUPABASE_S3_BUCKET` | O nome do bucket criado no passo 2 (ex: `media`). |
+| `SUPABASE_S3_ACCESS_KEY_ID` | O Access Key ID gerado no passo 2. |
+| `SUPABASE_S3_SECRET_ACCESS_KEY` | O Secret Access Key gerado no passo 2. |
+
+Se `SUPABASE_S3_ENDPOINT` não estiver definido, o projeto usa o disco local para uploads (só
+funciona bem em desenvolvimento — em produção no Render os arquivos seriam perdidos a cada deploy,
+então configure essas variáveis antes de ir ao ar).
+
+### 4. Criar o Web Service no Render
+
+1. Acesse [render.com](https://render.com) → **New → Web Service**.
+2. Conecte o repositório GitHub `fintech-pd/site-aee` e escolha a branch desejada.
+3. Configure:
+   - **Runtime**: Node
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm run start`
+   - **Instance Type**: ao menos o plano "Starter" (o plano gratuito "hiberna" o serviço quando
+     ocioso, o que é ruim para um painel de CMS).
+4. Em **Environment Variables**, adicione todas as variáveis da tabela do passo 3, mais:
+   - `NODE_VERSION` = `22` (ou a versão LTS mais recente disponível) — opcional, mas recomendado
+     para evitar divergências de versão do Node entre builds.
+5. Clique em **Create Web Service**. O Render vai instalar as dependências e buildar o projeto.
+
+### 5. Primeira sincronização do banco e dos dados
+
+Depois que o deploy terminar e o serviço estiver "Live" (ex: `https://site-aee.onrender.com`),
+rode **uma única vez**, da sua máquina:
+
+```bash
+# 1) Cria todas as tabelas no Postgres do Supabase
+curl -X POST https://SEU-APP.onrender.com/api/migrate \
+  -H "x-migrate-secret: O_MESMO_VALOR_DE_MIGRATE_SECRET"
+
+# 2) (opcional) Popula com a estrutura de exemplo das 7 instituições
+curl -X POST https://SEU-APP.onrender.com/api/seed \
+  -H "x-migrate-secret: O_MESMO_VALOR_DE_MIGRATE_SECRET"
+```
+
+Depois disso, acesse `https://SEU-APP.onrender.com/admin` para criar o usuário administrador e
+começar a editar o conteúdo real de cada instituição.
+
+> **Por que não usamos `payload migrate` (CLI)?** O comando oficial do Payload roda arquivos
+> TypeScript através da ferramenta `tsx`, que neste projeto apresentou um bug de incompatibilidade
+> com `undici`/Node.js em alguns ambientes (erro "Illegal constructor" em `CacheStorage`). O
+> endpoint `/api/migrate` aplica o mesmo resultado (criação/atualização das tabelas) reaproveitando
+> o bundler do próprio Next.js, que não tem esse problema. Se quiser tentar o CLI oficial em algum
+> momento (`npm run payload migrate:create`, por exemplo, para gerar migrations versionadas em
+> vez de usar o push automático), teste antes num ambiente separado — pode funcionar normalmente
+> dependendo da versão do Node/tsx disponível.
+
+### 6. Domínio próprio
+
+No Render, vá em **Settings → Custom Domains** do Web Service e adicione o domínio desejado (ex:
+`www.aee.edu.br`), seguindo as instruções de DNS mostradas (CNAME/A record). Veja também o item
+"Domínios" em **Próximos passos recomendados** abaixo sobre como rotear múltiplos domínios para
+instituições diferentes dentro do mesmo app.
 
 ## Observação sobre `payload generate:types`
 
@@ -96,15 +208,17 @@ rode `npm run generate:types` normalmente para regenerar esse arquivo automatica
 1. **Conteúdo real**: substituir os textos/imagens de exemplo pelos dados reais de cada
    instituição (missão/visão/valores, história, atos de credenciamento MEC reais, organogramas,
    fotos da coordenação, etc.) via painel `/admin`.
-2. **Domínios**: configurar o campo `domain` de cada instituição e, em produção, adicionar
-   roteamento por domínio/subdomínio (ex: middleware do Next.js lendo o host e redirecionando
-   para `/[slug-da-instituicao]`), já que hoje o roteamento usado no desenvolvimento é por
-   caminho (`/unievangelica`, `/aee`, etc.).
-3. **Banco de dados**: migrar de SQLite para Postgres em produção.
-4. **E-mail**: configurar um adapter de e-mail do Payload (hoje os e-mails só são logados no
-   console) para recuperação de senha de usuários do painel.
-5. **Upload de mídia**: configurar armazenamento externo (S3, Vercel Blob, etc.) via plugins
-   `@payloadcms/storage-*` para produção, em vez do disco local.
-6. **Permissões**: refinar as regras de acesso (`access`) de cada collection por instituição,
+2. **Domínios**: configurar o campo `domain` de cada instituição e adicionar roteamento por
+   domínio/subdomínio (ex: `middleware.ts` do Next.js lendo o host e reescrevendo para
+   `/[slug-da-instituicao]`), já que hoje o roteamento é por caminho (`/unievangelica`, `/aee`,
+   etc.). Necessário para que `www.unievangelica.edu.br` e `www.aee.edu.br`, por exemplo, sejam
+   domínios próprios apontando para instituições diferentes dentro do mesmo deploy.
+3. **E-mail**: configurar um adapter de e-mail do Payload (hoje os e-mails só são logados no
+   console) para recuperação de senha de usuários do painel — importante em produção.
+4. **Permissões**: refinar as regras de acesso (`access`) de cada collection por instituição,
    usando o campo `institutions` da collection `users`, para que cada equipe edite apenas o seu
    site.
+5. **Migrations versionadas**: hoje o `/api/migrate` usa "push" (sincronização direta do
+   esquema), adequado para o estágio atual do projeto. Para uma operação mais madura, vale gerar
+   migrations versionadas (arquivos SQL no controle de versão) com `payload migrate:create`,
+   assumindo que o ambiente usado não tenha o problema de `tsx` descrito acima.
